@@ -3,6 +3,7 @@ import logging
 
 from imbox.query import build_search_query
 from imbox.parser import fetch_email_by_uid
+from imbox.utils import timeout
 
 
 logger = logging.getLogger(__name__)
@@ -29,10 +30,12 @@ class Messages:
     def __init__(self,
                  connection,
                  parser_policy,
+                 timeout_per_msg=None,
                  **kwargs):
 
         self.connection = connection
         self.parser_policy = parser_policy
+        self.timeout_per_msg = timeout_per_msg
         self.kwargs = kwargs
         self._uid_list = self._query_uids(**kwargs)
 
@@ -52,7 +55,13 @@ class Messages:
 
     def _fetch_email_list(self):
         for uid in self._uid_list:
-            yield uid, self._fetch_email(uid)
+            with timeout(self.timeout_per_msg):
+                try:
+                    response = uid, self._fetch_email(uid)
+                    yield response
+                except TimeoutError:
+                    pass
+
 
     def __repr__(self):
         if len(self.kwargs) > 0:
