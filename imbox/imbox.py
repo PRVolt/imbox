@@ -16,7 +16,7 @@ class Imbox:
 
     def __init__(self, hostname, username=None, password=None, ssl=True,
                  port=None, ssl_context=None, policy=None, starttls=False,
-                 vendor=None):
+                 vendor=None, timeout_per_msg=None):
 
         self.server = ImapTransport(hostname, ssl=ssl, port=port,
                                     ssl_context=ssl_context, starttls=starttls)
@@ -25,6 +25,7 @@ class Imbox:
         self.username = username
         self.password = password
         self.parser_policy = policy
+        self.timeout_per_msg = timeout_per_msg
         self.vendor = vendor or hostname_vendorname_dict.get(self.hostname)
 
         if self.vendor is not None:
@@ -99,6 +100,7 @@ class Imbox:
 
         return messages_class(connection=self.connection,
                               parser_policy=self.parser_policy,
+                              timeout_per_msg=self.timeout_per_msg,
                               **kwargs)
 
     def folders(self):
