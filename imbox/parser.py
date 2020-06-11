@@ -2,6 +2,7 @@ import imaplib
 import io
 import re
 import email
+import chardet
 import base64
 import quopri
 import sys
@@ -13,6 +14,7 @@ from imbox.utils import str_encode, str_decode
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 
 class Struct:
@@ -105,20 +107,24 @@ def parse_attachment(message_part):
                 'content-id': message_part.get("Content-ID", None)
             }
             filename = message_part.get_param('name')
-            if filename:
-                attachment['filename'] = filename
-
+            filename_parts = []
             for param in dispositions[1:]:
                 if param:
                     name, value = decode_param(param)
 
-                    if 'file' in name:
-                        attachment['filename'] = value[1:-
-                                                       1] if value.startswith('"') else value
+                    # Check for split filename
+                    s_name = name.split("*")
+                    if s_name[0] == 'filename':
+                        # If this is a split file name - use the number after the * as an index to insert this part
+                        if len(s_name) > 1:
+                            filename_parts.insert(int(s_name[1]),value[1:-1] if value.startswith('"') else value)
+                        else:
+                            filename_parts.insert(0,value[1:-1] if value.startswith('"') else value)
 
                     if 'create-date' in name:
                         attachment['create-date'] = value
 
+            attachment['filename'] = "".join(filename_parts)
             return attachment
 
     return None
@@ -130,10 +136,10 @@ def decode_content(message):
     try:
         return content.decode(charset, 'ignore')
     except LookupError:
-        try:
-            return content.decode(charset.replace("-", ""), 'ignore')
-        except LookupError:
-            return content.decode('utf8', 'ignore')
+        encoding = chardet.detect(content).get('encoding')
+        if encoding:
+            return content.decode(encoding, 'ignore')
+        return content
     except AttributeError:
         return content
 

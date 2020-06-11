@@ -1,3 +1,19 @@
+## 0.9.8 (02 June 2020)
+
+IMPROVEMENTS:
+
+* Fix imbox.delete regression ([#138](https://github.com/martinrusev/imbox/issues/138))
+* Fixed handling for attachments with filenames longer than 76 characters ([#186](https://github.com/martinrusev/imbox/pull/186)) -  Contributed by @nirdrabkin
+* Improved character encoding detection ([#184](https://github.com/martinrusev/imbox/pull/184)) -  Contributed by @py-radicz
+
+## 0.9.7 (03 May 2020)
+
+IMPROVEMENTS:
+
+* Gmail: IMAP extension searches label and raw are not supported.
+* Searches in mail bodies and UID ranges are now supported.
+* Attachments have a Content-ID now (#174)
+
 ## 0.9.6 (14 August 2018)
 
 IMPROVEMENTS:
